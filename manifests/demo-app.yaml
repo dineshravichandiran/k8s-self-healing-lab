@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: self-healing-lab
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flaky-service
+  namespace: self-healing-lab
+  labels:
+    app: flaky-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flaky-service
+  template:
+    metadata:
+      labels:
+        app: flaky-service
+    spec:
+      containers:
+        - name: flaky-service
+          image: flaky-service:local
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              memory: "64Mi"
+            requests:
+              memory: "32Mi"
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 2
+            periodSeconds: 3
