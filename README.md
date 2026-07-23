@@ -6,6 +6,11 @@ remediates them automatically, plus chaos scripts that deliberately trigger
 both to prove the detection and remediation genuinely work, not just look
 right on paper.
 
+Also see [OPERATING-KUBERNETES.md](OPERATING-KUBERNETES.md) — practical
+troubleshooting scenarios (Pending pods, log collection, RBAC, QoS, node
+pressure) written the way I'd actually walk through them, not textbook
+theory.
+
 ## Why this exists
 
 Production work is pod- and node-level troubleshooting on AKS with kubectl
