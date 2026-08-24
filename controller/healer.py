@@ -44,22 +44,17 @@ def remediate_crashloop(apps_v1: client.AppsV1Api, pod_name: str) -> None:
         namespace=NAMESPACE,
         body={"spec": {"template": {"metadata": {"annotations": {"healer/rollback": str(time.time())}}}}},
     )
-    # In this lab the "bad" state is a bad env var/command patched on by the
-    # chaos script; rolling back means clearing exactly that.
+    # In this lab the "bad" state is a bad env var patched on by the chaos
+    # script; rolling back means clearing exactly that. A strategic-merge
+    # patch can't clear a list field with `"env": []` (Kubernetes treats an
+    # empty list in a strategic-merge patch as a no-op, not a clear) so this
+    # has to be a JSON patch. "add" (not "remove") so a concurrent
+    # remediation for another pod racing this one can't 422 on a path
+    # that's already gone.
     apps_v1.patch_namespaced_deployment(
         name=DEPLOYMENT,
         namespace=NAMESPACE,
-        body={
-            "spec": {
-                "template": {
-                    "spec": {
-                        "containers": [
-                            {"name": DEPLOYMENT, "command": None, "args": None, "env": []}
-                        ]
-                    }
-                }
-            }
-        },
+        body=[{"op": "add", "path": "/spec/template/spec/containers/0/env", "value": []}],
     )
     log.info(f"Remediation applied: {DEPLOYMENT} reverted to known-good config")
 
@@ -71,17 +66,7 @@ def remediate_oom(apps_v1: client.AppsV1Api, pod_name: str) -> None:
     apps_v1.patch_namespaced_deployment(
         name=DEPLOYMENT,
         namespace=NAMESPACE,
-        body={
-            "spec": {
-                "template": {
-                    "spec": {
-                        "containers": [
-                            {"name": DEPLOYMENT, "env": []}
-                        ]
-                    }
-                }
-            }
-        },
+        body=[{"op": "add", "path": "/spec/template/spec/containers/0/env", "value": []}],
     )
     log.info(f"Remediation applied: leak trigger cleared, deployment will reschedule a healthy pod")
 
