@@ -1,0 +1,30 @@
+# Deploys the Helm chart from Git, same sync policy and the same ignoreDifferences as the Kustomize Application.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: self-healing-lab-helm
+  namespace: argocd
+spec:
+  project: self-healing-lab
+  source:
+    repoURL: https://github.com/dineshravichandiran/k8s-self-healing-lab.git
+    targetRevision: feat/platform-addons
+    path: charts/self-healing-lab
+    helm:
+      releaseName: self-healing-lab
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: self-healing-lab-helm
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      name: flaky-service
+      jsonPointers:
+        - /spec/template/spec/containers/0/env
+        - /spec/template/metadata/annotations

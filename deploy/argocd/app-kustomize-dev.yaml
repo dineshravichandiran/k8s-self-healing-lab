@@ -1,0 +1,30 @@
+# Deploys the Kustomize "dev" overlay from Git and keeps the cluster equal to Git (automated sync, prune, self-heal).
+#
+# ignoreDifferences is the answer to a real conflict: the healer PATCHES the Deployment (it clears the env var and adds a
+# restart annotation). Without it, Argo CD's self-heal sees those patches as drift and "heals" them back, undoing the healer.
+# See docs/GITOPS.md for the run that shows this happening.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: self-healing-lab-dev
+  namespace: argocd
+spec:
+  project: self-healing-lab
+  source:
+    repoURL: https://github.com/dineshravichandiran/k8s-self-healing-lab.git
+    targetRevision: feat/platform-addons    # change to main after the branch is merged
+    path: deploy/kustomize/overlays/dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: self-healing-lab-dev
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      name: flaky-service
+      jsonPointers:
+        - /spec/template/spec/containers/0/env
+        - /spec/template/metadata/annotations
