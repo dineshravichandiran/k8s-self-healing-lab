@@ -3,8 +3,8 @@
 # which kubelet turns into CrashLoopBackOff after a few restarts.
 set -euo pipefail
 
-NS="self-healing-lab"
-DEPLOY="flaky-service"
+NS="${NS:-self-healing-lab}"
+DEPLOY="${DEPLOY:-flaky-service}"
 
 echo "[chaos] patching $DEPLOY to crash 5s after boot..."
 kubectl -n "$NS" patch deployment "$DEPLOY" --type=json -p='[

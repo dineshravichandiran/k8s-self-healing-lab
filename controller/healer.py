@@ -8,17 +8,33 @@ self-healing project, applied to Kubernetes instead of a single host.
 from __future__ import annotations
 
 import logging
+import os
 import time
 
 from kubernetes import client, config, watch
 
-NAMESPACE = "self-healing-lab"
-DEPLOYMENT = "flaky-service"
+SA_NAMESPACE_FILE = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
+
+
+def _default_namespace() -> str:
+    """Namespace to watch: HEALER_NAMESPACE, else the pod's own namespace when
+    running in-cluster, else the lab's original namespace (laptop mode)."""
+    if os.environ.get("HEALER_NAMESPACE"):
+        return os.environ["HEALER_NAMESPACE"]
+    if os.path.exists(SA_NAMESPACE_FILE):
+        with open(SA_NAMESPACE_FILE) as fh:
+            return fh.read().strip()
+    return "self-healing-lab"
+
+
+NAMESPACE = _default_namespace()
+DEPLOYMENT = os.environ.get("HEALER_DEPLOYMENT", "flaky-service")
+LOG_FILE = os.environ.get("HEALER_LOG_FILE", "self_healing.log")
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[logging.FileHandler("self_healing.log"), logging.StreamHandler()],
+    handlers=[logging.FileHandler(LOG_FILE), logging.StreamHandler()],
 )
 log = logging.getLogger("healer")
 

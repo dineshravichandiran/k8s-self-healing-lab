@@ -3,8 +3,8 @@
 # its 64Mi limit, which the kernel OOM-killer turns into OOMKilled.
 set -euo pipefail
 
-NS="self-healing-lab"
-DEPLOY="flaky-service"
+NS="${NS:-self-healing-lab}"
+DEPLOY="${DEPLOY:-flaky-service}"
 
 echo "[chaos] patching $DEPLOY to leak 20MB/sec..."
 kubectl -n "$NS" patch deployment "$DEPLOY" --type=json -p='[
