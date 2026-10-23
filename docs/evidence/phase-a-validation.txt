@@ -1,0 +1,32 @@
+# Phase A validation: 2026-10-23T10:12Z on Darwin arm64
+# helm v4.3.0+gbec5b06; kustomize v5.8.3; kubeconform v0.8.0
+
+$ helm lint charts/self-healing-lab
+==> Linting charts/self-healing-lab
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, 0 chart(s) failed
+exit: 0
+
+$ helm template t charts/self-healing-lab -n self-healing-lab | kubeconform -strict -summary -
+Summary: 6 resources found parsing stdin - Valid: 6, Invalid: 0, Errors: 0, Skipped: 0
+exit: 
+
+$ helm template (CrashLoop switch set) ...
+          env:
+            - name: CRASH_AFTER_SECONDS
+              value: "5"
+          resources:
+--
+          env:
+            - name: HEALER_NAMESPACE
+              valueFrom:
+                fieldRef:
+
+$ kustomize build deploy/kustomize/overlays/dev | kubeconform -strict -summary -
+Summary: 7 resources found parsing stdin - Valid: 7, Invalid: 0, Errors: 0, Skipped: 0
+exit: 
+
+$ kustomize build deploy/kustomize/overlays/prod | kubeconform -strict -summary -
+Summary: 7 resources found parsing stdin - Valid: 7, Invalid: 0, Errors: 0, Skipped: 0
+exit: 

@@ -1,0 +1,64 @@
+# Helm install/chaos/upgrade/rollback on kind: 2026-10-23T10:13Z
+Client Version: v1.33.0
+Kustomize Version: v5.6.0
+
+$ helm install self-healing-lab charts/self-healing-lab -n self-healing-lab --create-namespace --wait
+NAME: self-healing-lab
+LAST DEPLOYED: Fri Oct 23 15:43:31 2026
+NAMESPACE: self-healing-lab
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+Installed self-healing-lab as "self-healing-lab" in namespace self-healing-lab.
+
+Watch the pods:
+  kubectl -n self-healing-lab get pods -w
+
+Break the app on purpose (the healer should fix it):
+  NS=self-healing-lab bash chaos/trigger_crashloop.sh
+  NS=self-healing-lab bash chaos/trigger_oom.sh
+
+See what the healer did:
+  kubectl -n self-healing-lab logs deploy/healer
+
+NAME                                 READY   STATUS    RESTARTS   AGE
+pod/flaky-service-55f59f9485-gm7fj   1/1     Running   0          4s
+pod/healer-7879c7f854-vlpqg          1/1     Running   0          4s
+
+NAME                    TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
+service/flaky-service   ClusterIP   10.96.106.83   <none>        8080/TCP   4s
+
+NAME                            READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/flaky-service   1/1     1            1           4s
+deployment.apps/healer          1/1     1            1           4s
+
+--- healer log (in-cluster):
+2026-10-23 10:13:32,290 [INFO] Watching pods in namespace=self-healing-lab for CrashLoopBackOff / OOMKilled ...
+
+=== Chaos 1: CrashLoopBackOff (in-cluster healer)
+[chaos] patching flaky-service to crash 5s after boot...
+deployment.apps/flaky-service patched
+[chaos] waiting for CrashLoopBackOff to appear...
+[chaos] CrashLoopBackOff never appeared within timeout
+  -> deployment healthy again after 3s
+
+=== Chaos 2: OOMKilled
+[chaos] patching flaky-service to leak 20MB/sec...
+deployment.apps/flaky-service patched
+[chaos] waiting for OOMKilled to appear...
+[chaos] OOMKilled confirmed on pod flaky-service-66ffdffbdc-qw96r
+  -> deployment healthy again after 3s
+
+=== healer log
+2026-10-23 10:13:32,290 [INFO] Watching pods in namespace=self-healing-lab for CrashLoopBackOff / OOMKilled ...
+2026-10-23 10:13:55,269 [INFO] CrashLoopBackOff detected on flaky-service-7fbc76755b-2ww6f -> rolling back flaky-service
+2026-10-23 10:13:55,299 [INFO] Remediation applied: flaky-service reverted to known-good config
+2026-10-23 10:15:17,624 [INFO] OOMKilled detected on flaky-service-66ffdffbdc-qw96r -> clearing leak trigger on flaky-service
+2026-10-23 10:15:17,636 [INFO] Remediation applied: leak trigger cleared, deployment will reschedule a healthy pod
+
+NAME                             READY   STATUS        RESTARTS     AGE
+flaky-service-66ffdffbdc-qw96r   0/1     Terminating   1 (0s ago)   3s
+flaky-service-68c947746-tzpfk    1/1     Running       0            82s
+healer-7879c7f854-vlpqg          1/1     Running       0            106s

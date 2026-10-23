@@ -1,0 +1,29 @@
+# Chaos re-run with the fixed scripts, healer running IN the cluster: 2026-10-23T10:15Z
+
+=== 1. CrashLoopBackOff
+[chaos] patching flaky-service to crash 5s after boot...
+deployment.apps/flaky-service patched
+[chaos] waiting for CrashLoopBackOff to appear...
+[chaos] CrashLoopBackOff confirmed on pod flaky-service-6bd5f995d9-8df5h
+waiting for the healer...
+deployment "flaky-service" successfully rolled out
+  env on pod template now: [] (empty = healed)
+
+=== 2. OOMKilled
+[chaos] patching flaky-service to leak 20MB/sec...
+deployment.apps/flaky-service patched
+[chaos] waiting for OOMKilled to appear...
+[chaos] OOMKilled confirmed on pod flaky-service-767bfff749-r9j7r
+deployment "flaky-service" successfully rolled out
+  env on pod template now: [] (empty = healed)
+
+=== healer log (since this re-run began at 10:15:53 UTC)
+2026-10-23 10:16:06,839 [INFO] CrashLoopBackOff detected on flaky-service-6bd5f995d9-8df5h -> rolling back flaky-service
+2026-10-23 10:16:06,854 [INFO] Remediation applied: flaky-service reverted to known-good config
+2026-10-23 10:16:18,868 [INFO] OOMKilled detected on flaky-service-767bfff749-r9j7r -> clearing leak trigger on flaky-service
+2026-10-23 10:16:18,879 [INFO] Remediation applied: leak trigger cleared, deployment will reschedule a healthy pod
+
+NAME                             READY   STATUS        RESTARTS   AGE
+flaky-service-57fc46c5b8-t5s6n   1/1     Running       0          19s
+flaky-service-68c947746-tzpfk    1/1     Terminating   0          2m30s
+healer-7879c7f854-vlpqg          1/1     Running       0          2m54s

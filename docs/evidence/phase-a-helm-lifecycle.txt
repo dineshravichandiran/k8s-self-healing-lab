@@ -1,0 +1,34 @@
+# Helm lifecycle on kind: 2026-10-23T10:16Z
+
+$ helm upgrade self-healing-lab charts/self-healing-lab -n self-healing-lab --set app.replicas=2 --wait
+Release "self-healing-lab" has been upgraded. Happy Helming!
+NAME: self-healing-lab
+LAST DEPLOYED: Fri Oct 23 15:46:32 2026
+NAMESPACE: self-healing-lab
+STATUS: deployed
+REVISION: 2
+NAME            READY   UP-TO-DATE   AVAILABLE   AGE
+flaky-service   2/2     2            2           3m6s
+
+$ helm history self-healing-lab -n self-healing-lab
+REVISION	UPDATED                 	STATUS    	CHART                 	APP VERSION	DESCRIPTION     
+1       	Fri Oct 23 15:43:31 2026	superseded	self-healing-lab-0.1.0	1.0.0      	Install complete
+2       	Fri Oct 23 15:46:32 2026	deployed  	self-healing-lab-0.1.0	1.0.0      	Upgrade complete
+
+$ helm rollback self-healing-lab 1 -n self-healing-lab --wait
+Rollback was a success! Happy Helming!
+NAME            READY   UP-TO-DATE   AVAILABLE   AGE
+flaky-service   1/1     1            1           3m6s
+
+$ helm history (after rollback)
+REVISION	UPDATED                 	STATUS    	CHART                 	APP VERSION	DESCRIPTION     
+1       	Fri Oct 23 15:43:31 2026	superseded	self-healing-lab-0.1.0	1.0.0      	Install complete
+2       	Fri Oct 23 15:46:32 2026	superseded	self-healing-lab-0.1.0	1.0.0      	Upgrade complete
+3       	Fri Oct 23 15:46:37 2026	deployed  	self-healing-lab-0.1.0	1.0.0      	Rollback to 1   
+
+$ helm uninstall self-healing-lab -n self-healing-lab
+release "self-healing-lab" uninstalled
+NAME                                 READY   STATUS        RESTARTS   AGE
+pod/flaky-service-57fc46c5b8-cjv9g   1/1     Terminating   0          5s
+pod/flaky-service-57fc46c5b8-t5s6n   1/1     Terminating   0          31s
+pod/healer-7879c7f854-vlpqg          1/1     Terminating   0          3m6s
