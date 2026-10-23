@@ -20,7 +20,7 @@ differ. I also did a canary release with Argo Rollouts where a good release is p
 10. **What bug did running it find?** My chaos script checked only the first pod, so during a rolling update it missed the crashing pod even though the healer had fixed it. It now checks every pod.
 
 ## Limits (say them out loud)
-Local kind cluster only; no ingress, mesh, metrics-based analysis or real traffic splitting; the manifests CI workflow has not run on GitHub; the Argo CD demo used a manual refresh to avoid the 3-minute poll.
+Local kind cluster only; no ingress, mesh, metrics-based analysis or real traffic splitting; the manifests CI workflow passed on GitHub Actions but only on the feature branch; the Argo CD demo used a manual refresh to avoid the 3-minute poll.
 
 ## "Have you used Helm / Argo CD / Argo Rollouts at work?"
 "Not in my day job. I built and ran each one on a local cluster, and I can explain every file and the one hard problem I hit, the healer-versus-Argo conflict, including the trade-off in how I solved it."

@@ -20,7 +20,7 @@ All of this was run on a local kind cluster, and the output is saved in `docs/ev
 | Healer in the cluster | `controller/Dockerfile`, `healer.py` reads `HEALER_NAMESPACE` / `HEALER_DEPLOYMENT` | runs as a Deployment with its own ServiceAccount and a namespace-scoped Role |
 | Helm chart | `charts/self-healing-lab` | `helm lint`, `kubeconform -strict` (6 valid resources), install, both chaos tests healed in-cluster, upgrade, rollback, uninstall |
 | Kustomize | `deploy/kustomize` (`base`, `overlays/dev`, `overlays/prod`) | `kubeconform -strict` (7 valid resources each) and server-side dry-run against the cluster |
-| CI | `.github/workflows/manifests.yml` | written, YAML parses, **not run on GitHub yet** |
+| CI | `.github/workflows/manifests.yml` | passed on GitHub Actions (5 runs on the feature branch): helm lint, helm template and kustomize build checked with kubeconform |
 | Argo CD | `deploy/argocd` | initial sync, a change in Git, drift reverted, `git revert`; see [docs/GITOPS.md](docs/GITOPS.md) |
 | Healer vs Argo CD | `docs/GITOPS.md` | the conflict was reproduced and resolved with `ignoreDifferences`, with its downside written down |
 | Argo Rollouts | `examples/rollouts-canary` | good release promoted 20/50/100, bad release auto-aborted |
