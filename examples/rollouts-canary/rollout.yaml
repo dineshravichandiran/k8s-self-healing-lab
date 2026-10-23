@@ -1,0 +1,62 @@
+# A canary Rollout of the demo app. There is no ingress or service mesh here, so "weight" is approximated by the
+# NUMBER OF PODS: with 5 replicas, 20% means 1 canary pod and 50% means 3. With an ingress controller or a mesh the
+# same steps would shift real traffic instead.
+apiVersion: v1
+kind: Service
+metadata:
+  name: flaky-canary
+  namespace: rollouts-demo
+spec:
+  selector:
+    app: flaky-canary
+  ports:
+    - port: 8080
+      targetPort: 8080
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: flaky-canary
+  namespace: rollouts-demo
+spec:
+  replicas: 5
+  revisionHistoryLimit: 3
+  # If the new version cannot become available within 40s, mark the rollout failed and ABORT it (back to the stable version).
+  progressDeadlineSeconds: 40
+  progressDeadlineAbort: true
+  selector:
+    matchLabels:
+      app: flaky-canary
+  template:
+    metadata:
+      labels:
+        app: flaky-canary
+    spec:
+      containers:
+        - name: app
+          image: flaky-service:local
+          imagePullPolicy: Never
+          env:
+            - name: RELEASE
+              value: v1
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 2
+            periodSeconds: 3
+  strategy:
+    canary:
+      steps:
+        - setWeight: 20
+        - pause: { duration: 20s }
+        - setWeight: 50
+        - pause: { duration: 20s }
+        - setWeight: 100
