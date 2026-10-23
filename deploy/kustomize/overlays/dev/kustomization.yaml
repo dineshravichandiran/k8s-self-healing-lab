@@ -14,13 +14,3 @@ images:
     newTag: local
   - name: self-healing-healer
     newTag: local
-patches:
-  - target:
-      kind: Deployment
-      name: flaky-service
-    patch: |-
-      - op: add
-        path: /spec/template/spec/containers/0/env
-        value:
-          - name: CRASH_AFTER_SECONDS
-            value: "5"
