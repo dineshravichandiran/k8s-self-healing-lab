@@ -14,13 +14,17 @@ kubectl -n "$NS" patch deployment "$DEPLOY" --type=json -p='[
 ]'
 
 echo "[chaos] waiting for CrashLoopBackOff to appear..."
-for i in $(seq 1 30); do
-  reason=$(kubectl -n "$NS" get pod -l app="$DEPLOY" -o jsonpath='{.items[0].status.containerStatuses[0].state.waiting.reason}' 2>/dev/null || true)
-  if [ "$reason" = "CrashLoopBackOff" ]; then
-    echo "[chaos] CrashLoopBackOff confirmed on pod $(kubectl -n "$NS" get pod -l app="$DEPLOY" -o jsonpath='{.items[0].metadata.name}')"
+# Look at EVERY pod of the app, once a second. During a rolling update the old healthy pod can be
+# listed first, so checking only the first pod misses the crashing new one (found by running this
+# against an in-cluster healer, which reacts fast enough to expose the race).
+for i in $(seq 1 90); do
+  pod=$(kubectl -n "$NS" get pod -l app="$DEPLOY" -o json |
+    jq -r '.items[] | select(.status.containerStatuses[0].state.waiting.reason=="CrashLoopBackOff") | .metadata.name' | head -1)
+  if [ -n "$pod" ]; then
+    echo "[chaos] CrashLoopBackOff confirmed on pod $pod"
     exit 0
   fi
-  sleep 3
+  sleep 1
 done
 
 echo "[chaos] CrashLoopBackOff never appeared within timeout" >&2
