@@ -8,7 +8,7 @@ spec:
   project: self-healing-lab
   source:
     repoURL: https://github.com/dineshravichandiran/k8s-self-healing-lab.git
-    targetRevision: feat/platform-addons
+    targetRevision: main
     path: charts/self-healing-lab
     helm:
       releaseName: self-healing-lab

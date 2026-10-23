@@ -12,7 +12,7 @@ spec:
   project: self-healing-lab
   source:
     repoURL: https://github.com/dineshravichandiran/k8s-self-healing-lab.git
-    targetRevision: feat/platform-addons    # change to main after the branch is merged
+    targetRevision: main
     path: deploy/kustomize/overlays/dev
   destination:
     server: https://kubernetes.default.svc
