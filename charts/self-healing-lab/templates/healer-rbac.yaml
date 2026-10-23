@@ -1,0 +1,41 @@
+{{- if .Values.healer.enabled }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Values.healer.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "self-healing-lab.labels" . | nindent 4 }}
+---
+# Namespace-scoped on purpose: the healer can read pods and patch deployments in THIS namespace only.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ .Values.healer.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "self-healing-lab.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ .Values.healer.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "self-healing-lab.labels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.healer.name }}
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: Role
+  name: {{ .Values.healer.name }}
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}

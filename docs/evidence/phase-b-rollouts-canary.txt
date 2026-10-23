@@ -1,0 +1,165 @@
+# Argo Rollouts canary demo on kind: 2026-10-23T10:44Z
+# kubectl-argo-rollouts: v1.10.0+d90700a; controller quay.io/argoproj/argo-rollouts:v1.10.1
+=== 0. Deploy v1 (the first revision goes straight to 100%: there is nothing to canary against)
+service/flaky-canary created
+rollout.argoproj.io/flaky-canary created
+
+--- v1 healthy (10:44:07)
+Name:            flaky-canary
+Namespace:       rollouts-demo
+Status:          ✔ Healthy
+Strategy:        Canary
+  Step:          5/5
+  SetWeight:     100
+  ActualWeight:  100
+Images:          flaky-service:local (stable)
+Replicas:
+  Desired:       5
+  Current:       5
+  Updated:       5
+  Ready:         5
+  Available:     5
+
+NAME                                     KIND        STATUS     AGE  INFO
+⟳ flaky-canary                           Rollout     ✔ Healthy  5s   
+└──# revision:1                                                      
+   └──⧉ flaky-canary-8c8d8c886           ReplicaSet  ✔ Healthy  5s   stable
+      ├──□ flaky-canary-8c8d8c886-6bg6z  Pod         ✔ Running  5s   ready:1/1
+      ├──□ flaky-canary-8c8d8c886-6pmf5  Pod         ✔ Running  5s   ready:1/1
+      ├──□ flaky-canary-8c8d8c886-h8mdr  Pod         ✔ Running  5s   ready:1/1
+
+=== 1. GOOD release: v1 -> v2 (the pods are healthy, so the canary steps run: 20% -> 50% -> 100%)
+rollout.argoproj.io/flaky-canary patched
+
+--- step 1: 20% canary (1 of 5 pods), pausing 20s (10:44:15)
+Name:            flaky-canary
+Namespace:       rollouts-demo
+Status:          ॥ Paused
+Message:         CanaryPauseStep
+Strategy:        Canary
+  Step:          1/5
+  SetWeight:     20
+  ActualWeight:  20
+Images:          flaky-service:local (canary, stable)
+Replicas:
+  Desired:       5
+  Current:       5
+  Updated:       1
+  Ready:         5
+  Available:     5
+
+NAME                                      KIND        STATUS         AGE  INFO
+⟳ flaky-canary                            Rollout     ॥ Paused       13s  
+├──# revision:2                                                           
+│  └──⧉ flaky-canary-6fdc9fb455           ReplicaSet  ✔ Healthy      8s   canary
+│     └──□ flaky-canary-6fdc9fb455-rwsnc  Pod         ✔ Running      8s   ready:1/1
+└──# revision:1                                                           
+
+--- step 3: 50% canary (3 of 5 pods), pausing 20s (10:44:39)
+Name:            flaky-canary
+Namespace:       rollouts-demo
+Status:          ॥ Paused
+Message:         CanaryPauseStep
+Strategy:        Canary
+  Step:          3/5
+  SetWeight:     50
+  ActualWeight:  50
+Images:          flaky-service:local (canary, stable)
+Replicas:
+  Desired:       5
+  Current:       6
+  Updated:       3
+  Ready:         6
+  Available:     6
+
+NAME                                      KIND        STATUS         AGE  INFO
+⟳ flaky-canary                            Rollout     ॥ Paused       37s  
+├──# revision:2                                                           
+│  └──⧉ flaky-canary-6fdc9fb455           ReplicaSet  ✔ Healthy      32s  canary
+│     ├──□ flaky-canary-6fdc9fb455-rwsnc  Pod         ✔ Running      32s  ready:1/1
+│     ├──□ flaky-canary-6fdc9fb455-5zx8h  Pod         ✔ Running      8s   ready:1/1
+
+--- v2 fully promoted (10:44:59)
+Name:            flaky-canary
+Namespace:       rollouts-demo
+Status:          ✔ Healthy
+Strategy:        Canary
+  Step:          5/5
+  SetWeight:     100
+  ActualWeight:  100
+Images:          flaky-service:local (stable)
+Replicas:
+  Desired:       5
+  Current:       5
+  Updated:       5
+  Ready:         5
+  Available:     5
+
+NAME                                      KIND        STATUS         AGE  INFO
+⟳ flaky-canary                            Rollout     ✔ Healthy      58s  
+├──# revision:2                                                           
+│  └──⧉ flaky-canary-6fdc9fb455           ReplicaSet  ✔ Healthy      53s  stable
+│     ├──□ flaky-canary-6fdc9fb455-rwsnc  Pod         ✔ Running      53s  ready:1/1
+│     ├──□ flaky-canary-6fdc9fb455-5zx8h  Pod         ✔ Running      29s  ready:1/1
+│     ├──□ flaky-canary-6fdc9fb455-xk9rd  Pod         ✔ Running      29s  ready:1/1
+
+=== 2. BAD release: v2 -> v3 (the readiness probe points at a path that returns 404, so the canary never becomes ready)
+rollout.argoproj.io/flaky-canary patched
+
+--- bad canary is not becoming ready (progress deadline is 40s) (10:45:15)
+Name:            flaky-canary
+Namespace:       rollouts-demo
+Status:          ◌ Progressing
+Message:         more replicas need to be updated
+Strategy:        Canary
+  Step:          0/5
+  SetWeight:     20
+  ActualWeight:  0
+Images:          flaky-service:local (canary, stable)
+Replicas:
+  Desired:       5
+  Current:       5
+  Updated:       1
+  Ready:         4
+  Available:     4
+
+NAME                                      KIND        STATUS         AGE  INFO
+⟳ flaky-canary                            Rollout     ◌ Progressing  73s  
+├──# revision:3                                                           
+│  └──⧉ flaky-canary-5d7755d5b5           ReplicaSet  ◌ Progressing  15s  canary
+│     └──□ flaky-canary-5d7755d5b5-ljpk4  Pod         ✔ Running      15s  ready:0/1
+├──# revision:2                                                           
+
+--- after the deadline: the rollout aborted and is back on the stable version (10:45:55)
+Name:            flaky-canary
+Namespace:       rollouts-demo
+Status:          ✖ Degraded
+Message:         RolloutAborted: Rollout aborted update to revision 3: ReplicaSet "flaky-canary-5d7755d5b5" has timed out progressing.
+Strategy:        Canary
+  Step:          0/5
+  SetWeight:     0
+  ActualWeight:  0
+Images:          flaky-service:local (stable)
+Replicas:
+  Desired:       5
+  Current:       5
+  Updated:       0
+  Ready:         5
+  Available:     5
+
+NAME                                      KIND        STATUS         AGE   INFO
+⟳ flaky-canary                            Rollout     ✖ Degraded     113s  
+├──# revision:3                                                            
+│  └──⧉ flaky-canary-5d7755d5b5           ReplicaSet  • ScaledDown   55s   canary
+│     └──□ flaky-canary-5d7755d5b5-ljpk4  Pod         ◌ Terminating  55s   ready:0/1
+├──# revision:2                                                            
+
+=== Rollout history
+Name:            flaky-canary
+Namespace:       rollouts-demo
+Status:          ✖ Degraded
+Message:         RolloutAborted: Rollout aborted update to revision 3: ReplicaSet "flaky-canary-5d7755d5b5" has timed out progressing.
+Strategy:        Canary
+  Step:          0/5
+
+Stable pods still serving: 5 of 5 ready

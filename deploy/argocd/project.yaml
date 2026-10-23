@@ -1,0 +1,21 @@
+# Limits what the Applications in this lab may do: only this repository as a source, only these namespaces as targets.
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: self-healing-lab
+  namespace: argocd
+spec:
+  description: Self-healing lab (kind)
+  sourceRepos:
+    - https://github.com/dineshravichandiran/k8s-self-healing-lab.git
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: self-healing-lab-dev
+    - server: https://kubernetes.default.svc
+      namespace: self-healing-lab-helm
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"

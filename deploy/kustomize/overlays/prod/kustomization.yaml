@@ -1,0 +1,18 @@
+# Prod: more replicas and more memory headroom, a pinned image tag, and a patch for both.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: self-healing-lab-prod
+resources:
+  - ../../base
+  - namespace.yaml
+labels:
+  - pairs:
+      environment: prod
+    includeSelectors: false
+images:
+  - name: flaky-service
+    newTag: local          # in a real pipeline this becomes the image digest or release tag
+  - name: self-healing-healer
+    newTag: local
+patches:
+  - path: patch-app-scale.yaml

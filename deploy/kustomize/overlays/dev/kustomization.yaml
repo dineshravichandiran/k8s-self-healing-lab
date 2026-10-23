@@ -1,0 +1,16 @@
+# Dev: one replica, the same tight limits as the base, and the :local image.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: self-healing-lab-dev
+resources:
+  - ../../base
+  - namespace.yaml
+labels:
+  - pairs:
+      environment: dev
+    includeSelectors: false
+images:
+  - name: flaky-service
+    newTag: local
+  - name: self-healing-healer
+    newTag: local

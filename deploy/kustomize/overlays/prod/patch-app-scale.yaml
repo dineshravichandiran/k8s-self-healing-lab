@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flaky-service
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+        - name: flaky-service
+          resources:
+            requests:
+              memory: 64Mi
+            limits:
+              memory: 128Mi

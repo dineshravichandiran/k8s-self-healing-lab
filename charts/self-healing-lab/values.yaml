@@ -1,0 +1,41 @@
+# The flaky demo service.
+app:
+  name: flaky-service
+  image:
+    repository: flaky-service
+    tag: local
+    pullPolicy: Never          # the image is loaded into kind with `kind load docker-image`
+  replicas: 1
+  port: 8080
+  # Environment variables for the container. These are the two failure switches:
+  #   CRASH_AFTER_SECONDS: "5"   -> exits non-zero after 5s (CrashLoopBackOff)
+  #   LEAK_MB_PER_SEC: "20"      -> leaks memory until the limit kills it (OOMKilled)
+  env: {}
+  resources:
+    requests:
+      memory: 32Mi
+    limits:
+      memory: 64Mi
+  readinessProbe:
+    path: /healthz
+    initialDelaySeconds: 2
+    periodSeconds: 3
+
+service:
+  type: ClusterIP
+  port: 8080
+
+# The controller that watches the pods and fixes them.
+healer:
+  enabled: true
+  name: healer
+  image:
+    repository: self-healing-healer
+    tag: local
+    pullPolicy: Never
+  resources:
+    requests:
+      cpu: 10m
+      memory: 48Mi
+    limits:
+      memory: 128Mi

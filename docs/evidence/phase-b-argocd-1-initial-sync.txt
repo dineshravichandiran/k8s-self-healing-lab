@@ -1,0 +1,38 @@
+# Argo CD initial sync: 2026-10-23T10:51Z, Argo CD v3.5.6
+after ~12s: sync/health = Synced/Healthy
+
+Name:               argocd/self-healing-lab-dev
+Project:            self-healing-lab
+Server:             https://kubernetes.default.svc
+Namespace:          self-healing-lab-dev
+URL:                https://localhost:18443/applications/self-healing-lab-dev
+Source:
+- Repo:             https://github.com/dineshravichandiran/k8s-self-healing-lab.git
+  Target:           feat/platform-addons
+  Path:             deploy/kustomize/overlays/dev
+SyncWindow:         Sync Allowed
+Sync Policy:        Automated (Prune)
+Sync Status:        Synced to feat/platform-addons (3a41925)
+Health Status:      Healthy
+
+GROUP                      KIND            NAMESPACE             NAME                  STATUS   HEALTH  HOOK  MESSAGE
+                           Namespace       self-healing-lab-dev  self-healing-lab-dev  Running  Synced        namespace/self-healing-lab-dev created
+                           ServiceAccount  self-healing-lab-dev  healer                Synced                 serviceaccount/healer created
+rbac.authorization.k8s.io  Role            self-healing-lab-dev  healer                Synced                 role.rbac.authorization.k8s.io/healer reconciled. reconciliation required create
+                           missing rules added:
+                                        {Verbs:[get list watch] APIGroups:[] Resources:[pods] ResourceNames:[] NonResourceURLs:[]}
+                                        {Verbs:[get list watch patch] APIGroups:[apps] Resources:[deployments] ResourceNames:[] NonResourceURLs:[]}role.rbac.authorization.k8s.io/healer configured. Warning: resource roles/healer is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by  apply.  apply should only be used on resources created declaratively by either  create --save-config or  apply. The missing annotation will be patched automatically.
+rbac.authorization.k8s.io  RoleBinding  self-healing-lab-dev  healer  Synced      rolebinding.rbac.authorization.k8s.io/healer reconciled. reconciliation required create
+                           missing subjects added:
+                                       {Kind:ServiceAccount APIGroup: Name:healer Namespace:self-healing-lab-dev}rolebinding.rbac.authorization.k8s.io/healer configured. Warning: resource rolebindings/healer is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by  apply.  apply should only be used on resources created declaratively by either  create --save-config or  apply. The missing annotation will be patched automatically.
+                           Service     self-healing-lab-dev  flaky-service         Synced  Healthy    service/flaky-service created
+apps                       Deployment  self-healing-lab-dev  healer                Synced  Healthy    deployment.apps/healer created
+apps                       Deployment  self-healing-lab-dev  flaky-service         Synced  Healthy    deployment.apps/flaky-service created
+                           Namespace                         self-healing-lab-dev  Synced             
+
+NAME                                 READY   STATUS    RESTARTS   AGE
+pod/flaky-service-55f59f9485-vc77f   1/1     Running   0          6s
+pod/healer-7879c7f854-hpl29          1/1     Running   0          6s
+
+NAME                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+service/flaky-service   ClusterIP   10.96.149.118   <none>        8080/TCP   6s

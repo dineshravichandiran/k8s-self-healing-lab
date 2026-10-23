@@ -1,0 +1,35 @@
+# Argo CD and Argo Rollouts on kind: 2026-10-23T10:42Z
+
+# note: the Rollouts CRDs exceed the 262144-byte annotation limit, so a plain 'kubectl apply' fails; use --server-side
+$ kubectl apply -n argo-rollouts --server-side --force-conflicts -f .../argo-rollouts/releases/latest/download/install.yaml
+configmap/argo-rollouts-config serverside-applied
+secret/argo-rollouts-notification-secret serverside-applied
+service/argo-rollouts-metrics serverside-applied
+deployment.apps/argo-rollouts serverside-applied
+
+Waiting for deployment spec update to be observed...
+Waiting for deployment spec update to be observed...
+Waiting for deployment "argo-rollouts" rollout to finish: 0 out of 1 new replicas have been updated...
+Waiting for deployment "argo-rollouts" rollout to finish: 0 of 1 updated replicas are available...
+deployment "argo-rollouts" successfully rolled out
+deployment "argocd-server" successfully rolled out
+deployment "argocd-repo-server" successfully rolled out
+deployment "argocd-redis" successfully rolled out
+deployment "argocd-applicationset-controller" successfully rolled out
+deployment "argocd-notifications-controller" successfully rolled out
+deployment "argocd-dex-server" successfully rolled out
+partitioned roll out complete: 1 new pods have been updated...
+
+NAME                                                READY   STATUS    RESTARTS   AGE
+argocd-application-controller-0                     1/1     Running   0          68s
+argocd-applicationset-controller-58bb5c7479-v2pts   1/1     Running   0          68s
+argocd-dex-server-dd6b85d9c-wd5cl                   1/1     Running   0          68s
+argocd-notifications-controller-6b85c65458-nb94m    1/1     Running   0          68s
+argocd-redis-869b85489d-ll88p                       1/1     Running   0          68s
+argocd-repo-server-5bf66565cd-gphqn                 1/1     Running   0          68s
+argocd-server-7474bb8f76-8zdm6                      1/1     Running   0          68s
+
+argocd CLI: argocd: v3.5.4+d6d5b24.dirty
+kubectl-argo-rollouts: kubectl-argo-rollouts: v1.10.0+d90700a
+argo-rollouts controller image: quay.io/argoproj/argo-rollouts:v1.10.1
+argo-cd server image: quay.io/argoproj/argocd:v3.5.6

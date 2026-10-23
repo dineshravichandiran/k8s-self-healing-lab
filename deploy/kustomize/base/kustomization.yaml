@@ -1,0 +1,12 @@
+# The environment-neutral building blocks. The namespace is NOT set here: each overlay picks its own,
+# and creates it, so the same base can be deployed side by side as dev and prod.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deployment-app.yaml
+  - service.yaml
+  - healer.yaml
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: self-healing-lab
+    includeSelectors: false

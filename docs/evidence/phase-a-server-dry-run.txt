@@ -1,0 +1,31 @@
+# kubectl apply --dry-run=server on kind (API server v1.36.1): 2026-10-23T10:16Z
+
+$ helm template ... | kubectl apply --dry-run=server -f -
+serviceaccount/healer created (server dry run)
+role.rbac.authorization.k8s.io/healer created (server dry run)
+rolebinding.rbac.authorization.k8s.io/healer created (server dry run)
+service/flaky-service created (server dry run)
+deployment.apps/flaky-service created (server dry run)
+deployment.apps/healer created (server dry run)
+
+$ kustomize build deploy/kustomize/overlays/dev | kubectl apply --dry-run=server -f -
+Warning: resource namespaces/self-healing-lab-dev is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
+namespace/self-healing-lab-dev configured (server dry run)
+serviceaccount/healer created (server dry run)
+role.rbac.authorization.k8s.io/healer created (server dry run)
+rolebinding.rbac.authorization.k8s.io/healer created (server dry run)
+service/flaky-service created (server dry run)
+deployment.apps/flaky-service created (server dry run)
+deployment.apps/healer created (server dry run)
+
+$ kustomize build deploy/kustomize/overlays/prod | kubectl apply --dry-run=server -f -
+Warning: resource namespaces/self-healing-lab-prod is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
+namespace/self-healing-lab-prod configured (server dry run)
+serviceaccount/healer created (server dry run)
+role.rbac.authorization.k8s.io/healer created (server dry run)
+rolebinding.rbac.authorization.k8s.io/healer created (server dry run)
+service/flaky-service created (server dry run)
+deployment.apps/flaky-service created (server dry run)
+deployment.apps/healer created (server dry run)
+
+(the temporary dev/prod namespaces used for the dry run were deleted again)

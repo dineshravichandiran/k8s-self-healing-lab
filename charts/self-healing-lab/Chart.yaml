@@ -1,0 +1,6 @@
+apiVersion: v2
+name: self-healing-lab
+description: A deliberately flaky demo service plus an in-cluster healer that detects and fixes CrashLoopBackOff and OOMKilled.
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

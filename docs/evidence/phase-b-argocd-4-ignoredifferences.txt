@@ -1,0 +1,36 @@
+# Same bad commit still in Git, now with ignoreDifferences on the healer's fields: 2026-10-23T10:54Z
+
+=== apply the real Application (deploy/argocd/app-kustomize-dev.yaml, with ignoreDifferences)
+application.argoproj.io/self-healing-lab-dev configured
+
+--- timeline (every 6s for ~100s)
+10:54:06  live-env=[] argo=Synced pods: 7bc86(Running,r0) 
+10:54:12  live-env=[] argo=Synced pods: 7bc86(Running,r0) 
+10:54:18  live-env=[] argo=Synced pods: 7bc86(Running,r0) 
+10:54:25  live-env=[] argo=Synced pods: 7bc86(Running,r0) 
+10:54:31  live-env=[] argo=Synced pods: 7bc86(Running,r0) 
+10:54:37  live-env=[] argo=Synced pods: 7bc86(Running,r0) 
+10:54:43  live-env=[] argo=Synced pods: 7bc86(Running,r0) 
+10:54:49  live-env=[] argo=Synced pods: 7bc86(Running,r0) 
+10:54:56  live-env=[] argo=Synced pods: 7bc86(Running,r0) 
+10:55:02  live-env=[] argo=Synced pods: 7bc86(Running,r0) 
+10:55:08  live-env=[] argo=Synced pods: 7bc86(Running,r0) 
+10:55:14  live-env=[] argo=Synced pods: 7bc86(Running,r0) 
+10:55:20  live-env=[] argo=Synced pods: 7bc86(Running,r0) 
+10:55:27  live-env=[] argo=Synced pods: 7bc86(Running,r0) 
+10:55:33  live-env=[] argo=Synced pods: 7bc86(Running,r0) 
+10:55:39  live-env=[] argo=Synced pods: 7bc86(Running,r0) 
+
+--- healer remediations since 10:54:06 UTC: 0
+
+=== THE CATCH: what does Git say, and what is actually running?
+Git (dev overlay, commit 503a8b7) sets:  CRASH_AFTER_SECONDS=5
+Cluster (live Deployment) env: []  (empty = the healer's fix)
+Argo CD says: sync=Synced health=Healthy
+argocd app diff (exit code 0; 0 = no diff reported): 0 lines
+=> Argo reports Synced while the cluster differs from Git. The difference is hidden by ignoreDifferences.
+
+=== PROPER FIX: revert the bad commit in Git
+reverted, pushed 9ccf55a
+10:56:00  live-env=[] argo=Synced pods: 7bc86(Running,r0) 
+Git now sets no bad env: 0 occurrences of CRASH_AFTER_SECONDS
