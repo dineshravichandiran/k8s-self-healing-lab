@@ -14,6 +14,3 @@ images:
     newTag: local
   - name: self-healing-healer
     newTag: local
-replicas:
-  - name: flaky-service
-    count: 2
