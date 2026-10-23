@@ -1,0 +1,24 @@
+# GitOps loop with Argo CD (Application WITHOUT ignoreDifferences, automated sync + prune + selfHeal): 2026-10-23T10:51Z
+
+=== 1. Change a value IN GIT: dev overlay replicas 1 -> 2
+pushed 2916732; replicas in cluster right now: 1
+  -> replicas=2 after ~4s
+  Argo: sync=Synced health=Progressing revision=2916732
+
+=== 2. DRIFT: someone scales the Deployment by hand with kubectl (5 replicas); self-heal should revert it
+deployment.apps/flaky-service scaled
+scaled by hand -> replicas=5
+  -> replicas=2 after ~4s
+  Argo: sync=Synced health=Progressing revision=2916732
+
+=== 3. ROLLBACK with git revert
+reverted, pushed dcde496
+  -> replicas=1 after ~4s
+  Argo: sync=Synced health=Healthy revision=dcde496
+
+=== Argo CD sync history
+SOURCE  https://github.com/dineshravichandiran/k8s-self-healing-lab.git
+ID      DATE                           REVISION
+0       2026-10-23 16:21:06 +0530 IST  feat/platform-addons (3a41925)
+1       2026-10-23 16:21:26 +0530 IST  feat/platform-addons (2916732)
+2       2026-10-23 16:21:32 +0530 IST  feat/platform-addons (dcde496)

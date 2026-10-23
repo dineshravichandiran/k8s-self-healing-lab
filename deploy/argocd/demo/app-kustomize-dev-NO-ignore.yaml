@@ -1,0 +1,20 @@
+# DEMO ONLY: the same Application as ../app-kustomize-dev.yaml but WITHOUT ignoreDifferences.
+# Used to show the conflict between Argo CD's self-heal and the healer. Do not use it for real.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: self-healing-lab-dev
+  namespace: argocd
+spec:
+  project: self-healing-lab
+  source:
+    repoURL: https://github.com/dineshravichandiran/k8s-self-healing-lab.git
+    targetRevision: feat/platform-addons    # change to main after the branch is merged
+    path: deploy/kustomize/overlays/dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: self-healing-lab-dev
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

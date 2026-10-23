@@ -1,0 +1,27 @@
+# Argo CD Application that deploys the Helm chart from Git: 2026-10-23T10:56Z
+application.argoproj.io/self-healing-lab-helm created
+after ~12s: sync/health = Synced/Healthy
+
+Name:               argocd/self-healing-lab-helm
+Project:            self-healing-lab
+Server:             https://kubernetes.default.svc
+Namespace:          self-healing-lab-helm
+URL:                https://localhost:18443/applications/self-healing-lab-helm
+Source:
+- Repo:             https://github.com/dineshravichandiran/k8s-self-healing-lab.git
+  Target:           feat/platform-addons
+  Path:             charts/self-healing-lab
+SyncWindow:         Sync Allowed
+Sync Policy:        Automated (Prune)
+Sync Status:        Synced to feat/platform-addons (9ccf55a)
+Health Status:      Healthy
+
+GROUP                      KIND            NAMESPACE              NAME                   STATUS   HEALTH  HOOK  MESSAGE
+                           Namespace                              self-healing-lab-helm  Running  Synced        namespace/self-healing-lab-helm created
+
+NAME                             READY   STATUS    RESTARTS   AGE
+flaky-service-55f59f9485-h7dsq   1/1     Running   0          7s
+healer-7879c7f854-lwgn5          1/1     Running   0          7s
+
+helm labels on the Deployment (Argo renders the chart with helm template):
+{"app":"flaky-service","app.kubernetes.io/instance":"self-healing-lab","app.kubernetes.io/managed-by":"Helm","app.kubernetes.io/part-of":"self-healing-lab","helm.sh/chart":"self-healing-lab-0.1.0"}

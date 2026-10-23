@@ -1,0 +1,45 @@
+# Conflict: Argo CD self-heal vs the healer, Application WITHOUT ignoreDifferences: 2026-10-23T10:51Z
+# Scenario: a BAD config is committed to Git (CRASH_AFTER_SECONDS=5). The healer fixes the live Deployment; Git still says the bad config.
+bad config pushed as 503a8b7
+
+--- timeline (every 6s for ~2 minutes)
+10:51:50  git-bad-env-live=[] argo=Synced pods: 55f59(Terminating,r0) 55f59(Terminating,r0) 55f59(Terminating,r0) 55f59(Running,r0) 55f59(Terminating,r0) 
+10:51:57  git-bad-env-live=[CRASH_AFTER_SECONDS] argo=Synced pods: 55f59(Terminating,r0) 55f59(Terminating,r0) 55f59(Terminating,r0) 55f59(Terminating,r0) 55f59(Terminating,r0) 7fbc7(Running,r0) 
+10:52:03  git-bad-env-live=[CRASH_AFTER_SECONDS] argo=Synced pods: 55f59(Terminating,r0) 55f59(Error,r0) 7fbc7(Running,r1) 
+10:52:09  git-bad-env-live=[CRASH_AFTER_SECONDS] argo=Synced pods: 55f59(Terminating,r0) 5b789(Running,r0) b759d(Running,r0) 
+10:52:15  git-bad-env-live=[CRASH_AFTER_SECONDS] argo=Synced pods: 55f59(Terminating,r0) 5b789(Running,r1) b759d(Terminating,r0) 
+10:52:21  git-bad-env-live=[CRASH_AFTER_SECONDS] argo=Synced pods: 55f59(Terminating,r0) 7c785(Running,r0) 7d788(Running,r0) b759d(Terminating,r0) 
+10:52:27  git-bad-env-live=[CRASH_AFTER_SECONDS] argo=Synced pods: 7c785(Running,r1) 7d788(Terminating,r0) b759d(Terminating,r0) 
+10:52:34  git-bad-env-live=[] argo=OutOfSync pods: 595fd(Running,r0) 7c785(Error,r1) 7d695(Running,r0) 7d788(Terminating,r0) b759d(Terminating,r0) 
+10:52:40  git-bad-env-live=[CRASH_AFTER_SECONDS] argo=Synced pods: 595fd(Running,r0) 7d695(Running,r0) 7d788(Terminating,r0) b759d(Terminating,r0) 
+10:52:46  git-bad-env-live=[CRASH_AFTER_SECONDS] argo=Synced pods: 595fd(Running,r1) 7d695(Terminating,r0) 7d788(Terminating,r0) 
+10:52:52  git-bad-env-live=[] argo=OutOfSync pods: 595fd(Error,r1) 78b4b(Running,r0) 7b86b(Running,r0) 7d695(Terminating,r0) 7d788(Terminating,r0) 
+10:52:58  git-bad-env-live=[] argo=OutOfSync pods: 78b4b(Running,r0) 7d695(Terminating,r0) 
+10:53:04  git-bad-env-live=[] argo=OutOfSync pods: 78b4b(Running,r0) 7d695(Terminating,r0) 
+10:53:11  git-bad-env-live=[] argo=OutOfSync pods: 78b4b(Running,r0) 7d695(Terminating,r0) 
+10:53:17  git-bad-env-live=[] argo=OutOfSync pods: 78b4b(Running,r0) 
+10:53:23  git-bad-env-live=[] argo=OutOfSync pods: 78b4b(Running,r0) 
+10:53:29  git-bad-env-live=[] argo=OutOfSync pods: 78b4b(Running,r0) 
+10:53:35  git-bad-env-live=[CRASH_AFTER_SECONDS] argo=Synced pods: 78b4b(Terminating,r0) 7b86b(Running,r0) 
+10:53:42  git-bad-env-live=[CRASH_AFTER_SECONDS] argo=Synced pods: 78b4b(Terminating,r0) 7b86b(Running,r1) 
+10:53:48  git-bad-env-live=[] argo=OutOfSync pods: 5b4c6(Running,r0) 78b4b(Terminating,r0) 7bc86(Running,r0) 
+
+--- healer log since 10:51:50 UTC
+2026-10-23 10:52:06,353 [INFO] CrashLoopBackOff detected on flaky-service-7fbc76755b-nhxw8 -> rolling back flaky-service
+2026-10-23 10:52:06,388 [INFO] Remediation applied: flaky-service reverted to known-good config
+2026-10-23 10:52:19,431 [INFO] CrashLoopBackOff detected on flaky-service-5b789564b5-zx4wk -> rolling back flaky-service
+2026-10-23 10:52:19,445 [INFO] Remediation applied: flaky-service reverted to known-good config
+2026-10-23 10:52:32,483 [INFO] CrashLoopBackOff detected on flaky-service-7c785b55dc-wmhs9 -> rolling back flaky-service
+2026-10-23 10:52:32,503 [INFO] Remediation applied: flaky-service reverted to known-good config
+2026-10-23 10:52:50,538 [INFO] CrashLoopBackOff detected on flaky-service-595fdc6f46-kpbff -> rolling back flaky-service
+2026-10-23 10:52:50,556 [INFO] Remediation applied: flaky-service reverted to known-good config
+2026-10-23 10:53:44,904 [INFO] CrashLoopBackOff detected on flaky-service-7b86bcc549-cwhhf -> rolling back flaky-service
+2026-10-23 10:53:44,930 [INFO] Remediation applied: flaky-service reverted to known-good config
+
+healer remediations in 2 minutes: 5
+
+--- Argo CD sync operations (history)
+0       2026-10-23 16:21:06 +0530 IST  feat/platform-addons (3a41925)
+1       2026-10-23 16:21:26 +0530 IST  feat/platform-addons (2916732)
+2       2026-10-23 16:21:32 +0530 IST  feat/platform-addons (dcde496)
+3       2026-10-23 16:21:52 +0530 IST  feat/platform-addons (503a8b7)
