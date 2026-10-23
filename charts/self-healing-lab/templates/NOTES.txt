@@ -1,0 +1,11 @@
+Installed {{ .Chart.Name }} as "{{ .Release.Name }}" in namespace {{ .Release.Namespace }}.
+
+Watch the pods:
+  kubectl -n {{ .Release.Namespace }} get pods -w
+
+Break the app on purpose (the healer should fix it):
+  NS={{ .Release.Namespace }} bash chaos/trigger_crashloop.sh
+  NS={{ .Release.Namespace }} bash chaos/trigger_oom.sh
+
+See what the healer did:
+  kubectl -n {{ .Release.Namespace }} logs deploy/{{ .Values.healer.name }}
