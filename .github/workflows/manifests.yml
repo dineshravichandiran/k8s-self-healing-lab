@@ -1,0 +1,37 @@
+name: manifests
+
+# Static checks for the Helm chart and the Kustomize overlays. No cluster needed.
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      KUBECONFORM_VERSION: v0.8.0
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-helm@v4
+
+      - name: Install kubeconform
+        run: |
+          curl -sSL "https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" | tar xz kubeconform
+          sudo mv kubeconform /usr/local/bin/
+          kubeconform -v
+
+      - name: helm lint
+        run: helm lint charts/self-healing-lab
+
+      - name: helm template | kubeconform
+        run: helm template t charts/self-healing-lab -n self-healing-lab | kubeconform -strict -summary -
+
+      - name: kustomize build (dev) | kubeconform
+        run: kubectl kustomize deploy/kustomize/overlays/dev | kubeconform -strict -summary -
+
+      - name: kustomize build (prod) | kubeconform
+        run: kubectl kustomize deploy/kustomize/overlays/prod | kubeconform -strict -summary -
